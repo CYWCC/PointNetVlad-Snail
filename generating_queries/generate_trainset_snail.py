@@ -96,8 +96,7 @@ def split_dataset(base_path, data_split, save_path, positive_dist, negative_dist
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', type=str, default='/media/cyw/KESU/datasets/clean_radar/processed_snail_radar/ars548', help='radar datasets path')
-    parser.add_argument('--save_folder', type=str, default='./radar_split/', help='the saved path of split file ')
+    parser.add_argument('--data_path', type=str, default='/media/cyw/KESU/datasets/clean_radar/processed_snail_radar/oculii', help='radar datasets path')
     parser.add_argument('--data_split', type=str, default='train', help='train_short or train_long')
     parser.add_argument('--positive_dist', type=float, default=9, help='Positive sample distance threshold, short:3, long:9')
     parser.add_argument('--negative_dist', type=float, default=18, help='Negative sample distance threshold, short:10, long:18')
@@ -107,8 +106,8 @@ if __name__ == "__main__":
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     radar_type = cfgs.data_path.split('/')[-1]
-    save_name = 'training_queries_' + cfgs.data_split + '_' + str(cfgs.positive_dist) + 'm_' + str(cfgs.yaw_threshold) + '_' + radar_type + '.pickle'
+    save_name = 'training_PNV_' + str(cfgs.positive_dist) + 'm_' + str(cfgs.yaw_threshold) + '.pickle'
 
-    save_path = os.path.join(cfgs.save_folder, save_name)
+    save_path = os.path.join(cfgs.data_path, save_name)
     split_dataset(cfgs.data_path, cfgs.data_split, save_path, cfgs.positive_dist,
                   cfgs.negative_dist, cfgs.use_timestamp_name)

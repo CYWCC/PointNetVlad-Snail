@@ -1,5 +1,5 @@
 # GLOBAL
-NUM_POINTS = 4096
+NUM_POINTS = 1024   # 1280 1024
 FEATURE_OUTPUT_DIM = 256
 RESULTS_FOLDER = "results/"
 OUTPUT_FILE = "results/results.txt"
@@ -29,7 +29,7 @@ BN_DECAY_CLIP = 0.99
 
 RESUME = False
 
-TRAIN_FILE = 'generating_queries/training_queries_baseline.pickle'
+TRAIN_FILE = 'training_PNV_9m_75.pickle'
 TEST_FILE = 'generating_queries/test_queries_baseline.pickle'
 
 # LOSS
@@ -43,8 +43,8 @@ EVAL_BATCH_SIZE = 2
 EVAL_POSITIVES_PER_QUERY = 4
 EVAL_NEGATIVES_PER_QUERY = 12
 
-EVAL_DATABASE_FILE = 'generating_queries/oxford_evaluation_database.pickle'
-EVAL_QUERY_FILE = 'generating_queries/oxford_evaluation_query.pickle'
+EVAL_DATABASE_FILE = 'evaluation_PNV_database_valid.pickle'
+EVAL_QUERY_FILE = 'evaluation_PNV_query_valid_9m_30.pickle'
 
 
 def cfg_str():

@@ -17,7 +17,7 @@ def output_to_file(output, filename):
         # pickle.dump(output, handle, protocol=1)
     print("Done ", filename)
 
-def construct_query_and_database_sets(base_path, data_split, seqs, positive_dist, yaw_threshold, use_yaw, save_folder, use_timestamp_name):
+def construct_query_and_database_sets(base_path, data_split, seqs, positive_dist, yaw_threshold, use_yaw, use_timestamp_name):
     database_trees = []
     database_sets = {}
     query_sets = {}
@@ -67,22 +67,18 @@ def construct_query_and_database_sets(base_path, data_split, seqs, positive_dist
                 true_index = index
             query_sets[seq][key][seq] = true_index
 
-    os.makedirs(save_folder, exist_ok=True)
-    radar_type = base_path.split('/')[-1]
     if use_yaw:
-        output_to_file(database_sets, save_folder + 'evaluation_database_' + data_split +'_'+ radar_type+ '.pickle')
-        output_to_file(query_sets,
-                       save_folder + 'evaluation_query_' + data_split + '_' + str(positive_dist) + 'm_' + str(yaw_threshold) + '_'+ radar_type+ '.pickle')
+        output_to_file(database_sets, base_path+'/evaluation_PNV_database_' + data_split + '.pickle')
+        output_to_file(query_sets, base_path+ '/evaluation_PNV_query_' + data_split + '_' + str(positive_dist) + 'm_' + str(yaw_threshold) + '.pickle')
     else:
-        output_to_file(database_sets, save_folder + 'evaluation_database_' + data_split + '.pickle')
-        output_to_file(query_sets, save_folder + 'evaluation_query_' + data_split + '_' + str(positive_dist) + 'm.pickle')
+        output_to_file(database_sets, base_path+ '/evaluation_PNV_database_' + data_split + '.pickle')
+        output_to_file(query_sets, base_path+ '/evaluation_PNV_query_' + data_split + '_' + str(positive_dist) + 'm.pickle')
 
 # Building database and query files for evaluation
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default='/media/cyw/KESU/datasets/clean_radar/processed_snail_radar/ars548',
                         help='radar datasets path')
-    parser.add_argument('--save_folder', type=str, default='./radar_split/', help='the saved path of split file ')
     parser.add_argument('--data_split', type=str, default='valid', help='test_short or test_long')
     parser.add_argument('--positive_dist', type=float, default=9,
                         help='Positive sample distance threshold, short:5, long:9')
@@ -109,4 +105,4 @@ if __name__ == '__main__':
             raise Exception('Loading error!')
 
     construct_query_and_database_sets(cfgs.data_path, cfgs.data_split, seqs, cfgs.positive_dist, cfgs.yaw_threshold,
-                                      cfgs.use_yaw, cfgs.save_folder, cfgs.use_timestamp_name)
+                                      cfgs.use_yaw, cfgs.use_timestamp_name)
