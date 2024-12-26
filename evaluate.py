@@ -26,7 +26,7 @@ def evaluate():
                              input_dim=cfg.INPUT_DIM, output_dim=cfg.FEATURE_OUTPUT_DIM, num_points=cfg.NUM_POINTS)
     model = model.to(device)
 
-    resume_filename = cfg.LOG_DIR + cfg.MODEL_FILENAME
+    resume_filename = cfg.MODEL_FILENAME
     print("Resuming From ", resume_filename)
     checkpoint = torch.load(resume_filename)
     saved_state_dict = checkpoint['state_dict']
@@ -35,6 +35,49 @@ def evaluate():
     model = nn.DataParallel(model)
 
     print(evaluate_model(model))
+
+
+def save_recall_results(recall_dict, one_percent_recall_dict, result_dir):
+    if not os.path.exists(result_dir):
+        os.makedirs(result_dir)
+
+    # 构建 all_recalls 数据
+    all_recalls = {}
+    for q_key, pair_recall in recall_dict.items():
+        all_recalls[q_key] = {
+            "recall_at_n": {
+                1: pair_recall[0],  # Recall @1
+                5: pair_recall[4],  # Recall @5
+                10: pair_recall[9],  # Recall @10
+                20: pair_recall[19]  # Recall @20
+            },
+            "recall_at_1_percent": one_percent_recall_dict[q_key]  # Top 1% Recall
+        }
+
+    # 计算平均 Recall
+    ave_recall_1 = np.mean([metrics['recall_at_n'][1] for metrics in all_recalls.values()])
+    ave_recall_5 = np.mean([metrics['recall_at_n'][5] for metrics in all_recalls.values()])
+    ave_recall_10 = np.mean([metrics['recall_at_n'][10] for metrics in all_recalls.values()])
+    ave_recall_20 = np.mean([metrics['recall_at_n'][20] for metrics in all_recalls.values()])
+    ave_one_percent_recall = np.mean([metrics['recall_at_1_percent'] for metrics in all_recalls.values()])
+
+    with open(cfg.OUTPUT_FILE, "w") as output:
+
+        for q_key, metrics in all_recalls.items():
+            output.write(f"Query Set: {q_key}\n")
+            output.write(f"Recall@1: {metrics['recall_at_n'][1]:.4f}\n")
+            output.write(f"Recall@5: {metrics['recall_at_n'][5]:.4f}\n")
+            output.write(f"Recall@10: {metrics['recall_at_n'][10]:.4f}\n")
+            output.write(f"Recall@20: {metrics['recall_at_n'][20]:.4f}\n")
+            output.write(f"Top 1% Recall: {metrics['recall_at_1_percent']:.4f}\n\n")
+
+        output.write(f"Average Recall @1: {ave_recall_1:.4f}\n")
+        output.write(f"Average Recall @5: {ave_recall_5:.4f}\n")
+        output.write(f"Average Recall @10: {ave_recall_10:.4f}\n")
+        output.write(f"Average Recall @20: {ave_recall_20:.4f}\n")
+        output.write(f"Average Top 1% Recall: {ave_one_percent_recall:.4f}\n")
+
+    print(f"==> Results saved to {result_dir}")
 
 
 def evaluate_model(model):
@@ -49,7 +92,8 @@ def evaluate_model(model):
     recall = np.zeros(25)
     count = 0
 
-    one_percent_recall = []
+    one_percent_recall_dict = {}
+    recall_dict = {}
 
     DATABASE_VECTORS = []
     QUERY_VECTORS = []
@@ -69,20 +113,27 @@ def evaluate_model(model):
                 continue
             pair_recall, pair_opr = get_recall(i, j, g_key, q_key, DATABASE_VECTORS, QUERY_VECTORS, QUERY_SETS)
             recall += np.array(pair_recall)
+            recall_dict[q_key] = pair_recall
             count += 1
-            one_percent_recall.append(pair_opr)
+            one_percent_recall_dict[q_key] = pair_opr
 
 
     ave_recall = recall / count
-    ave_one_percent_recall = np.mean(one_percent_recall)
+    ave_one_percent_recall = np.mean(list(one_percent_recall_dict.values()))
 
-    with open(cfg.OUTPUT_FILE, "w") as output:
-        output.write("Average Recall @N:\n")
-        output.write(str(ave_recall))
-        output.write("\n\n")
-        output.write("\n\n")
-        output.write("Average Top 1% Recall:\n")
-        output.write(str(ave_one_percent_recall))
+    save_recall_results(
+        recall_dict=recall_dict,
+        one_percent_recall_dict=one_percent_recall_dict,
+        result_dir=cfg.RESULTS_FOLDER
+    )
+
+    # with open(cfg.OUTPUT_FILE, "w") as output:
+    #     output.write("Average Recall @N:\n")
+    #     output.write(str(ave_recall))
+    #     output.write("\n\n")
+    #     output.write("\n\n")
+    #     output.write("Average Top 1% Recall:\n")
+    #     output.write(str(ave_one_percent_recall))
 
     return ave_recall, ave_one_percent_recall
 
@@ -213,8 +264,10 @@ if __name__ == "__main__":
 
     #BATCH_SIZE = FLAGS.batch_size
     #cfg.EVAL_BATCH_SIZE = FLAGS.eval_batch_size
-    cfg.NUM_POINTS = 4096
+    cfg.NUM_POINTS = 1024
     cfg.FEATURE_OUTPUT_DIM = 256
+    cfg.DATA_DIM = 5
+    cfg.INPUT_DIM = 4
     cfg.EVAL_POSITIVES_PER_QUERY = FLAGS.positives_per_query
     cfg.EVAL_NEGATIVES_PER_QUERY = FLAGS.negatives_per_query
     cfg.DECAY_STEP = FLAGS.decay_step
@@ -226,8 +279,8 @@ if __name__ == "__main__":
     cfg.EVAL_QUERY_FILE = 'generating_queries/oxford_evaluation_query.pickle'
 
     cfg.LOG_DIR = 'log/'
-    cfg.OUTPUT_FILE = cfg.RESULTS_FOLDER + 'results.txt'
-    cfg.MODEL_FILENAME = "model.ckpt"
+    data_type = cfg.DATASET_FOLDER.split('/')[-1]
+    cfg.OUTPUT_FILE = os.path.join(cfg.RESULTS_FOLDER, data_type + '_results.txt')
 
     cfg.DATASET_FOLDER = FLAGS.dataset_folder
 

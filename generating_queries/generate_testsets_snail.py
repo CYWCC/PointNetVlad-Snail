@@ -98,9 +98,9 @@ if __name__ == '__main__':
             raise Exception('Loading error!')
     elif 'test' in cfgs.data_split:
         if "ars548" in cfgs.data_path:
-            seqs = ['']
-        elif "oculli" in cfgs.data_path:
-            seqs = ['']
+            seqs = ['bc', 'ss', 'st', 'sl', 'if', 'iaf', 'iaef', '81r']
+        elif "oculii" in cfgs.data_path:
+            seqs = ['bc', 'ss', 'st', 'sl', 'if', 'iaf', 'iaef', '81r']
         else:
             raise Exception('Loading error!')
 
