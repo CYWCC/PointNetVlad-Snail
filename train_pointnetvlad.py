@@ -182,7 +182,6 @@ def train():
         log_string('EVAL RECALL: %s' % str(recall))
         log_string('EVAL one_percent_recall: %s' % str(one_percent_recall))
 
-    recall, one_percent_recall = evaluate.evaluate_model(model)
     for epoch in tqdm(range(starting_epoch, cfg.MAX_EPOCH)):
         log_string('**** EPOCH %03d ****' % (epoch))
         sys.stdout.flush()

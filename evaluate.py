@@ -127,14 +127,6 @@ def evaluate_model(model):
         result_dir=cfg.RESULTS_FOLDER
     )
 
-    # with open(cfg.OUTPUT_FILE, "w") as output:
-    #     output.write("Average Recall @N:\n")
-    #     output.write(str(ave_recall))
-    #     output.write("\n\n")
-    #     output.write("\n\n")
-    #     output.write("Average Top 1% Recall:\n")
-    #     output.write(str(ave_one_percent_recall))
-
     return ave_recall, ave_one_percent_recall
 
 
@@ -275,13 +267,12 @@ if __name__ == "__main__":
 
     cfg.RESULTS_FOLDER = FLAGS.results_dir
 
-    cfg.EVAL_DATABASE_FILE = 'generating_queries/oxford_evaluation_database.pickle'
-    cfg.EVAL_QUERY_FILE = 'generating_queries/oxford_evaluation_query.pickle'
+    cfg.EVAL_DATABASE_FILE = 'path/to/evaluation_PNV_database_test.pickle'
+    cfg.EVAL_QUERY_FILE = 'path/to/evaluation_PNV_query_test_9m_30.pickle'
 
     cfg.LOG_DIR = 'log/'
     data_type = cfg.DATASET_FOLDER.split('/')[-1]
     cfg.OUTPUT_FILE = os.path.join(cfg.RESULTS_FOLDER, data_type + '_results.txt')
-
-    cfg.DATASET_FOLDER = FLAGS.dataset_folder
+    cfg.MODEL_FILENAME = "path/to/best_checkpoint.pth.tar"
 
     evaluate()
